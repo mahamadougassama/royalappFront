@@ -3,9 +3,9 @@ import 'package:college_royal/Pages/Cours.dart';
 import 'package:flutter/material.dart';
 
 class Colonie extends StatefulWidget {
-  SortieExtra? colonie;
+  SortieExtra colonie;
    Colonie({super.key,
-  this.colonie
+   required this.colonie
   });
 
   @override
@@ -158,12 +158,12 @@ class _ColonieState extends State<Colonie> {
                   String autreText='';
                  if(colonie.isNotEmpty){
                   
-                  widget.colonie?.colonie=colonie;
+                  widget.colonie.colonie=colonie;
                  }
                  if(autre.text.isNotEmpty){
                  autreText=autre.text;
                  colonie.add(autreText);
-                 widget.colonie?.colonie=colonie;
+                 widget.colonie.colonie=colonie;
                  }
                   Navigator.push(
                     context,

@@ -3,8 +3,8 @@ import 'package:college_royal/Pages/Concours.dart';
 import 'package:flutter/material.dart';
 
 class Cours extends StatefulWidget {
-  final SortieExtra? cours;
-  const Cours({super.key, this.cours});
+  final SortieExtra cours;
+  const Cours({super.key, required this.cours});
 
   @override
   State<Cours> createState() => _CoursState();
@@ -17,6 +17,14 @@ class _CoursState extends State<Cours> {
   final List<String> premierCycle = [];
   final List<String> secondCycle = [];
   final List<String> Lycee = [];
+  @override
+  void dispose() {
+    autrePremierCycle.dispose();
+    autreSecondCycle.dispose();
+    autreLycee.dispose();
+    super.dispose();
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -471,39 +479,41 @@ class _CoursState extends State<Cours> {
               width: double.infinity,
               child: ElevatedButton.icon(
                 onPressed: () {
-                  List<String> matieres=[];
-                  if(premierCycle.isNotEmpty){
-                   matieres=premierCycle;
-                  }
-                  else if(secondCycle.isNotEmpty){
-                    matieres=secondCycle;
-                  }
-                  else if(Lycee.isNotEmpty){
-                   matieres=Lycee;
-                  }
-                  
-                    String autre='';
-                    if(autrePremierCycle.text.isNotEmpty){
-                      autre=autrePremierCycle.text;
-                    }else if(autreSecondCycle.text.isNotEmpty){
-                      autre=autreSecondCycle.text;
-                    }else if(autreLycee.text.isNotEmpty){
-                      autre=autreLycee.text;
-                    }
-                    if(autre.isNotEmpty){
-                      matieres.add(autre);
-                    }
-                    widget.cours?.cours=matieres;
-                     
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => Concours(
-                        concours:widget.cours
-                      ),
-                    ),
-                  );
-                },
+  List<String> matieres = [];
+
+  if (premierCycle.isNotEmpty) {
+    matieres = [...premierCycle];
+  } else if (secondCycle.isNotEmpty) {
+    matieres = [...secondCycle];
+  } else if (Lycee.isNotEmpty) {
+    matieres = [...Lycee];
+  }
+
+  // Récupérer les matières saisies dans les champs Autre
+  if (autrePremierCycle.text.trim().isNotEmpty) {
+    matieres.add(autrePremierCycle.text.trim());
+  }
+
+  if (autreSecondCycle.text.trim().isNotEmpty) {
+    matieres.add(autreSecondCycle.text.trim());
+  }
+
+  if (autreLycee.text.trim().isNotEmpty) {
+    matieres.add(autreLycee.text.trim());
+  }
+
+  // Enregistrer dans le même objet
+  widget.cours.cours = matieres;
+
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => Concours(
+        concours: widget.cours,
+      ),
+    ),
+  );
+},
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.indigo,
                   foregroundColor: Colors.white,

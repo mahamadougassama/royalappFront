@@ -3,8 +3,8 @@ import 'package:college_royal/Pages/Etudes.dart';
 import 'package:flutter/material.dart';
 
 class Concours extends StatefulWidget {
-  SortieExtra? concours;
-  Concours({super.key, this.concours});
+  SortieExtra concours;
+  Concours({super.key,required this.concours});
 
   @override
   State<Concours> createState() => _ConcoursState();
@@ -13,6 +13,13 @@ class Concours extends StatefulWidget {
 class _ConcoursState extends State<Concours> {
   List<String> concours = [];
   TextEditingController autreConcours = TextEditingController();
+  @override
+  void dispose() {
+    autreConcours.dispose();
+    super.dispose();
+  } 
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -141,9 +148,9 @@ class _ConcoursState extends State<Concours> {
                                       onChanged: (valeur) {
                                         setState(() {
                                           if (valeur == true) {
-                                            concours.add("CHampionnat du Monde Robotique");
+                                            concours.add("Championnat du Monde de Robotique");
                                           } else {
-                                            concours.remove("Championnat du Monde Robotique");
+                                            concours.remove("Championnat du Monde de Robotique");
                                           }
                                         });
                                       },
@@ -168,12 +175,12 @@ class _ConcoursState extends State<Concours> {
                                 Row(
                                   children: [
                                     Checkbox(
-                                      value: concours.contains("L'olympiade Internationale d'intelligente Artificielle"),
+                                      value: concours.contains("L'olympiade Internationale d'Intelligence Artificielle"),
                                       activeColor: Colors.indigo,
                                       onChanged: (valeur) {
                                         setState(() {
                                           if (valeur == true) {
-                                            concours.add("L'olympiade Internationale d'Intellignec Artificielle");
+                                            concours.add("L'olympiade Internationale d'Intelligence Artificielle");
                                           } else {
                                             concours.remove("L'olympiade Internationale d'Intelligence Artificielle");
                                           }
@@ -271,7 +278,7 @@ class _ConcoursState extends State<Concours> {
                                           if (valeur == true) {
                                             concours.add("World Cup en Calcul mental");
                                           } else {
-                                            concours.remove("World Cup en Clacul mental");
+                                            concours.remove("World Cup en Calcul mental");
                                           }
                                         });
                                       },
@@ -357,26 +364,24 @@ class _ConcoursState extends State<Concours> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
-                onPressed: () {
-                  String autreText='';
-                  if(concours.isNotEmpty){
-                    
-                    widget.concours?.concours=concours;
+               onPressed: () {
+  List<String> listeConcours = [...concours];
 
-                  } if(autreConcours.text.isNotEmpty){
-                        autreText=autreConcours.text;
-                        concours.add(autreText);
-                        widget.concours?.concours=concours;
-                  }
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => Etudes(
-                        etudes: widget.concours,
-                      ),
-                    ),
-                  );  
-                },    
+  if (autreConcours.text.trim().isNotEmpty) {
+    listeConcours.add(autreConcours.text.trim());
+  }
+
+  widget.concours.concours = listeConcours;
+
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => Etudes(
+        etudes: widget.concours,
+      ),
+    ),
+  );
+}, 
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.indigo,
                   foregroundColor: Colors.white,

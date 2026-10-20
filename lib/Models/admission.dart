@@ -1,12 +1,12 @@
 class Admission {
-
+int? id;
 //Eleve
 String? nomEleve;
 String? dateLieuNaissance;
-String?nationalite;
+String? nationnalite;
 String? classActuelle;
 String? etablissementFrequente;
-String? residence;
+String? residance;
 String? rue;
 String? porte;
 //pere
@@ -22,9 +22,9 @@ String? nomTuteur;
 String? professionTuteur;
 String? adresseContactTuteur;
 //repediteur
-String? nomRepediteur;
-String? professionRepediteur;
-String? adresseContactRepediteur;
+String? nomRepititeur;
+String? professionRepetiteur;
+String? adresseContactRepitieteur;
 //depart;
 String? depart;
 String?accompagnant;
@@ -38,12 +38,13 @@ Admission();
 
 Map<String,dynamic> toJson(){
   return {
+    "id":id,
     "nomEleve":nomEleve,
     "dateLieuNaissance":dateLieuNaissance,
-    "nationalite":nationalite,
-    "classeActuelle":classActuelle,
-    "etablissamentFrequente":etablissementFrequente,
-    "residance":residence,
+    "nationnalite":nationnalite,
+    "classActuelle":classActuelle,
+    "etablissementFrequente":etablissementFrequente,
+    "residance":residance,
     "rue":rue,
     "porte":porte,
     "nomPere":nomPere,
@@ -51,13 +52,13 @@ Map<String,dynamic> toJson(){
     "adresseContactPere":adresseContactPere,
     "nomMere":nomMere,
     "professionMere":professionMere,
-    "adresseConatctMere":adresseContactMere,
+    "adresseContactMere":adresseContactMere,
     "nomTuteur":nomTuteur,
     "professionTuteur":professionTuteur,
     "adresseContactTuteur":adresseContactTuteur,
-    "nomRepetiteur":nomRepediteur,
-    "professionRepetiteur":professionRepediteur,
-    "adresseCobtactRepetiteur":adresseContactRepediteur,
+    "nomRepititeur":nomRepititeur,
+    "professionRepetiteur":professionRepetiteur,
+    "adresseContactRepitieteur":adresseContactRepitieteur,
     "depart":depart,
     "accompagnant":accompagnant,
     "projet":projet,
@@ -68,13 +69,13 @@ Map<String,dynamic> toJson(){
 }
 factory Admission.fromJson(Map<String, dynamic> json) {
   Admission admission = Admission();
-
+  admission.id=json['id'];
   admission.nomEleve = json['nomEleve'];
   admission.dateLieuNaissance = json['dateLieuNaissance'];
-  admission.nationalite = json['nationalite'];
-  admission.classActuelle = json['classeActuelle'];
-  admission.etablissementFrequente = json['etablissamentFrequente'];
-  admission.residence = json['residance'];
+  admission.nationnalite = json['nationnalite'];
+  admission.classActuelle = json['classActuelle'];
+  admission.etablissementFrequente = json['etablissementFrequente'];
+  admission.residance = json['residance'];
   admission.rue = json['rue'];
   admission.porte = json['porte'];
 
@@ -84,15 +85,15 @@ factory Admission.fromJson(Map<String, dynamic> json) {
 
   admission.nomMere = json['nomMere'];
   admission.professionMere = json['professionMere'];
-  admission.adresseContactMere = json['adresseConatctMere'];
+  admission.adresseContactMere = json['adresseContactMere'];
 
   admission.nomTuteur = json['nomTuteur'];
   admission.professionTuteur = json['professionTuteur'];
   admission.adresseContactTuteur = json['adresseContactTuteur'];
 
-  admission.nomRepediteur = json['nomRepetiteur'];
-  admission.professionRepediteur = json['professionRepetiteur'];
-  admission.adresseContactRepediteur = json['adresseCobtactRepetiteur'];
+  admission.nomRepititeur = json['nomRepetiteur'];
+  admission.professionRepetiteur = json['professionRepetiteur'];
+  admission.adresseContactRepitieteur = json['adresseCobtactRepetiteur'];
 
   admission.depart = json['depart'];
   admission.accompagnant = json['accompagnant'];

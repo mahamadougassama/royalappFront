@@ -48,23 +48,24 @@ class AdmissionNotifier extends Notifier<AdmissionState> {
         erreur: e.toString()
        );
     }
-  } 
-  Future<void> save(Admission admission)async{
-    try{
-      
-      final list=[
-        ...state.admission,admission
-      ];
-      state.copyWith(
-       admission: list
-      );
-      _admissionService.save(admission);
-    }catch(e){
-      print(e);
-    }
   }
-  
-    
+    Future<Admission> save(Admission admission)async{
+      try{
+    final nouveau=await _admissionService.save(admission);
+    final list=[...state.admission,nouveau];
+    state=state.copyWith(
+      admission: list,
+      erreur: null,
+      loading: false
+    );
+    return nouveau;
+      }catch(e){
+      state=state.copyWith(
+        erreur: e.toString(),
+      );
+      rethrow;
+      }
+    }
    
 }
  final admissionProvider= NotifierProvider<AdmissionNotifier,AdmissionState>(() {

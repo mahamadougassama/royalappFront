@@ -1,4 +1,5 @@
 import 'package:college_royal/Pages/Activite.dart';
+import 'package:college_royal/Pages/ActivitePage.dart';
 import 'package:college_royal/Pages/AdmissionPage.dart';
 import 'package:college_royal/Pages/IdentiteElevePage.dart';
 import 'package:college_royal/Pages/IdentiteParentPage.dart';
@@ -31,6 +32,7 @@ class MyApp extends StatelessWidget {
         '/activite':(context) => Activite(),
         '/listAdmission':(context) => AdmissionPage(),
         '/eleve':(context) => IdentiteElevePage(),
+        '/listActivite':(context) => ActivitePage(),
       },
       initialRoute: '/',
     );

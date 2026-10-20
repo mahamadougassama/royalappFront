@@ -1,20 +1,24 @@
 import 'dart:math';
 
 import 'package:college_royal/Models/SortieExtra.dart';
+import 'package:college_royal/Widegt/SortieState.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class Etudes extends StatefulWidget {
-  SortieExtra? etudes;
-  Etudes({super.key, this.etudes});
+class Etudes extends ConsumerStatefulWidget {
+  SortieExtra etudes;
+  Etudes({super.key, required this.etudes});
 
   @override
-  State<Etudes> createState() => _EtudesState();
+  ConsumerState<Etudes> createState() => _EtudesState();
 }
 
-class _EtudesState extends State<Etudes> {
+class _EtudesState extends ConsumerState<Etudes> {
+  TextEditingController autreEtude=TextEditingController();
+    List<String> etude = [];
   @override
   Widget build(BuildContext context) {
-    List<String> etude = [];
+    
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
@@ -77,6 +81,7 @@ class _EtudesState extends State<Etudes> {
                                       onChanged: (valeur) {
                                         setState(() {
                                           if (valeur == true) {
+                                            etude.remove("Aucun");
                                             etude.add("Maroc");
                                           } else {
                                             etude.remove("Maroc");
@@ -95,6 +100,7 @@ class _EtudesState extends State<Etudes> {
                                       onChanged: (valeur) {
                                         setState(() {
                                           if (valeur == true) {
+                                            etude.remove("Aucun");
                                             etude.add("Europe");
                                           } else {
                                             etude.remove("Europe");
@@ -113,6 +119,7 @@ class _EtudesState extends State<Etudes> {
                                       onChanged: (valeur) {
                                         setState(() {
                                           if (valeur == true) {
+                                            etude.remove("Aucun");
                                             etude.add("Canada");
                                           } else {
                                             etude.remove("Canada");
@@ -131,6 +138,7 @@ class _EtudesState extends State<Etudes> {
                                       onChanged: (valeur) {
                                         setState(() {
                                           if (valeur == true) {
+                                            etude.remove("Aucun");
                                             etude.add("USA");
                                           } else {
                                             etude.remove("USA");
@@ -153,6 +161,8 @@ class _EtudesState extends State<Etudes> {
                                       onChanged: (valeur) {
                                         setState(() {
                                           if (valeur == true) {
+                                          
+                                            etude.remove("Aucun");
                                             etude.add("Chine");
                                           } else {
                                             etude.remove("Chine");
@@ -166,6 +176,7 @@ class _EtudesState extends State<Etudes> {
                                 Padding(
                                   padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
                                   child: TextField(
+                                    controller: autreEtude,
                                     decoration: InputDecoration(
                                       hintText: "Autres a preciser",
                                       hintStyle: const TextStyle(fontSize: 12),
@@ -190,6 +201,7 @@ class _EtudesState extends State<Etudes> {
                                       onChanged: (valeur) {
                                         setState(() {
                                           if (valeur == true) {
+                                            etude.clear();
                                             etude.add("Aucun");
                                           } else {
                                             etude.remove("Aucun");
@@ -207,10 +219,44 @@ class _EtudesState extends State<Etudes> {
                         ),
                       ),
                     ),
+                   
                   ],
                 ),
               ),
             ),
+             SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () {
+            List<String> listeEtudes = [...etude];
+
+          if (autreEtude.text.trim().isNotEmpty) {
+          listeEtudes.add(autreEtude.text.trim());
+        }
+
+         widget.etudes.etude = listeEtudes;
+
+          ref.read(sortieProvider.notifier).save(widget.etudes);
+          
+},
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.indigo,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  elevation: 3,
+                ),
+                
+                label: const Text(
+                  "Sauvegardez",
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              )),
           ],
         ),
       ),

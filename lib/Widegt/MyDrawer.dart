@@ -87,6 +87,13 @@ class MyDrawer extends StatelessWidget {
               Navigator.pushNamed(context, '/listAdmission');
             },
           ),
+          ListTile(
+            leading: Icon(Icons.access_time),
+            title: Text("Liste des Activite",style: TextStyle(color: Colors.indigo),),
+            onTap: () {
+              Navigator.pushNamed(context, '/listActivite');
+            },
+          )
         ],
       ),
     );

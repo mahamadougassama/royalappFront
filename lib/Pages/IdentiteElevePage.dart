@@ -291,10 +291,10 @@ class _IdentiteElevePageState extends State<IdentiteElevePage> {
                        Admission eleve=Admission();
                        eleve.nomEleve=nomEleve.text;
                        eleve.dateLieuNaissance=dateLieuNaissance.text;
-                       eleve.nationalite=Nationalite.text;
+                       eleve.nationnalite=Nationalite.text;
                        eleve.classActuelle=classActuelle.text;
                        eleve.etablissementFrequente=etablissementFrequente.text;
-                       eleve.residence=residence.text;
+                       eleve.residance=residence.text;
                        eleve.rue=rue.text;
                        eleve.porte=porte.text;
                       Navigator.push(context, MaterialPageRoute(builder:(context)=>IdentiteParentPage(parent: eleve)));

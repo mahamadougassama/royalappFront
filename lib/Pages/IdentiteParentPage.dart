@@ -527,9 +527,9 @@ class _IdentiteParentPageState extends State<IdentiteParentPage> {
                     widget.parent.nomTuteur=nomTuteur.text;
                     widget.parent.professionTuteur=professionTuteur.text;
                     widget.parent.adresseContactTuteur=adresseContactTuteur.text;
-                    widget.parent.nomRepediteur=nomRepediteur.text;
-                    widget.parent.professionRepediteur=professionRepediteur.text;
-                    widget.parent.adresseContactRepediteur=adresseContactRepediteur.text;
+                    widget.parent.nomRepititeur=nomRepediteur.text;
+                    widget.parent.professionRepetiteur=professionRepediteur.text;
+                    widget.parent.adresseContactRepitieteur=adresseContactRepediteur.text;
                     Navigator.push(context, MaterialPageRoute(builder: (context)=>InformationComplemetairePage(
                        information: widget.parent,
                     )));

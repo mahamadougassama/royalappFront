@@ -1,3 +1,4 @@
+import 'package:college_royal/Models/admission.dart';
 import 'package:college_royal/Widegt/AdmissionState.dart';
 import 'package:college_royal/Widegt/ImprimerPdf.dart';
 import 'package:college_royal/Widegt/MyDrawer.dart';
@@ -105,13 +106,13 @@ class _AdmissionPageState extends ConsumerState<AdmissionPage> {
             SizedBox(height: 6),
             Text("Date et Lieu de Naissance: ${a.dateLieuNaissance}"),   
             SizedBox(height: 6),
-            Text("Nationalité: ${a.nationalite}"),
+            Text("Nationalité: ${a.nationnalite}"),
             SizedBox(height: 6),
             Text("Classe Actuelle: ${a.classActuelle}"),
             SizedBox(height: 6),
             Text("Etablissement: ${a.etablissementFrequente}"),
             SizedBox(height: 6),
-            Text("Residence: ${a.residence}"),
+            Text("Residence: ${a.residance}"),
             SizedBox(height: 6),
             Text("Rue:${a.rue}"),
             SizedBox(height: 6),
@@ -227,12 +228,13 @@ class _AdmissionPageState extends ConsumerState<AdmissionPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                IconButton(onPressed: (){
+                IconButton(onPressed: ()async{
 
                 }, icon: Icon(Icons.delete, color: Colors.red)),
-                IconButton(onPressed: (){
-                  final admission=ImprimerPdf(a);
-                  admission.imprimer();
+                IconButton(onPressed: ()async{
+                  
+                 await ImprimerPdf().imprimerAdmission(a);
+
                 }, icon: Icon(Icons.update, color: Colors.indigo))
               ],
             )

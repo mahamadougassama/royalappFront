@@ -1,4 +1,7 @@
+import 'package:college_royal/Models/SortieExtra.dart';
 import 'package:college_royal/Models/admission.dart';
+import 'package:college_royal/Pages/Activite.dart';
+import 'package:college_royal/Pages/ActivitePage.dart';
 import 'package:college_royal/Widegt/AdmissionState.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -335,14 +338,56 @@ class _InformationComplemetairePageState extends ConsumerState<InformationComple
                     ),
                     elevation: 3,
                   ),  
-                  onPressed: () {
+                  onPressed: ()async {
                    widget.information.depart=depart;
                    widget.information.accompagnant=accompagnant.text;
                    widget.information.projet=projet.text;
                    widget.information.particularite=particularite.text;
                    widget.information.sanguin=sanguin.text;
                    widget.information.medecin=medecin.text;
-                    ref.read(admissionProvider.notifier).save(widget.information);
+                  final nouveau=await ref.read(admissionProvider.notifier).save(widget.information);
+                final choix=await showDialog<bool>(context: context,
+                  builder: (context){
+                    return AlertDialog(
+                      title: Text("Activite Extrat Scolaire"),
+                      content: Text("Voulez vous nous renseignez sur les Activite Extrart Scolaire de votre enfant ?"),
+                      actions: [
+                        ElevatedButton(onPressed:(){
+                          Navigator.pop(context,false);
+                        }, child: Text("non")),
+                        ElevatedButton(onPressed: (){
+                          Navigator.pop(context,true);
+                        }, child: Text("oui"))
+                      ],
+                      
+                    );
+                  
+                    
+                  });
+                  if(choix==true){
+                   SortieExtra sortieExtra=SortieExtra();
+                   sortieExtra.admission=nouveau;
+                  Navigator.push(context, MaterialPageRoute(builder: (context)=>Activite(
+                    activite: sortieExtra,
+                  )));
+                  }
+                  else if(choix==false){
+                    showDialog(context: context, builder:
+                    (context){
+                      return AlertDialog(
+                        content: Text("Admission Enregistrer"),
+                        actions: [
+                          ElevatedButton(onPressed: (){
+                             Navigator.pop(context);
+                          }, child: Text("OK"))
+                        ],
+                      );
+                      
+                    }
+                  
+                    );
+                  }
+                  
                   },
                   child: const Text(
                     "Suivant",

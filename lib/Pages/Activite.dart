@@ -1,9 +1,13 @@
 import 'package:college_royal/Models/SortieExtra.dart';
 import 'package:college_royal/Pages/Club.dart';
+import 'package:college_royal/Widegt/MyDrawer.dart';
 import 'package:flutter/material.dart';
 
 class Activite extends StatefulWidget {
-  Activite({super.key});
+  SortieExtra? activite;
+  Activite({super.key,
+  this.activite,
+  });
 
   @override
   State<Activite> createState() => _ActiviteState();
@@ -24,7 +28,7 @@ class _ActiviteState extends State<Activite> {
         backgroundColor: Colors.indigo,
         centerTitle: true,
       ),
-      drawer: const Drawer(),
+     drawer: MyDrawer(),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(20),
@@ -79,6 +83,7 @@ class _ActiviteState extends State<Activite> {
                                         onChanged: (valeur) {
                                           setState(() {
                                             if (valeur == true) {
+                                              
                                               sortie.add("1er Trimestre");
                                             } else {
                                               sortie.remove("1er Trimestre");
@@ -180,13 +185,13 @@ class _ActiviteState extends State<Activite> {
                 width: double.infinity,
                 child: ElevatedButton.icon(
                   onPressed: () {
-                    SortieExtra sortieExtra = SortieExtra();
-                    sortieExtra.sortie = sortie;
+                    
+                    widget.activite?.activite=sortie;
                     Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (context) => Club(
-                          clubSortie: sortieExtra,
+                          clubSortie: widget.activite!
                         ),
                       ),
                     );

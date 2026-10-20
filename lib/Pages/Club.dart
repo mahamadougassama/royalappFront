@@ -3,9 +3,9 @@ import 'package:college_royal/Pages/Colonie.dart';
 import 'package:flutter/material.dart';
 
 class Club extends StatefulWidget {
-  SortieExtra? clubSortie;
+  SortieExtra clubSortie;
    Club({super.key,
-          this.clubSortie,
+         required this.clubSortie,
   });
 
   @override
@@ -332,12 +332,12 @@ class _ClubState extends State<Club> {
                 onPressed: () {
                   String autreText='';
                   if(club.isNotEmpty){
-                   widget.clubSortie?.club=club;
+                   widget.clubSortie.club=club;
                   }
                   if(autre.text.isNotEmpty){
                       autreText=autre.text;
                       club.add(autreText);
-                      widget.clubSortie?.club=club;
+                      widget.clubSortie.club=club;
                   }
                   
                   Navigator.push(
