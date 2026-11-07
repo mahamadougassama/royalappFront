@@ -1,4 +1,5 @@
 import 'package:college_royal/Widegt/ImprimerActivite.dart';
+import 'package:college_royal/Widegt/MyDrawer.dart';
 import 'package:college_royal/Widegt/SortieState.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -45,6 +46,7 @@ class _ActivitePageState extends ConsumerState<ActivitePage> {
           backgroundColor: Colors.indigo,
           centerTitle: true,
         ),
+        
         body: Padding(padding: EdgeInsets.all(20),
         child: Text("Erreur :${etat.erreur}"),
         
@@ -58,6 +60,7 @@ class _ActivitePageState extends ConsumerState<ActivitePage> {
           backgroundColor: Colors.indigo,
           centerTitle: true,
         ),
+        drawer: MyDrawer(),
         body: Padding(padding: EdgeInsets.all(20),
         child: 
         ListView.builder(itemCount: etat.sortieExtra.length,
@@ -192,11 +195,46 @@ class _ActivitePageState extends ConsumerState<ActivitePage> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                 ElevatedButton(onPressed: (){
-                  
-                 }, child: Icon(Icons.delete),
+                 ElevatedButton(
+  onPressed: () async {
 
-                 ),
+    final confirmation = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text("Confirmation"),
+          content: Text(
+            "Voulez-vous vraiment supprimer cette activité ?"
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context, false);
+              },
+              child: Text("Annuler"),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context, true);
+              },
+              child: Text(
+                "Supprimer",
+                style: TextStyle(color: Colors.red),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmation == true && activite.id != null) {
+      await ref
+          .read(sortieProvider.notifier)
+          .delete(activite.id!);
+    }
+  },
+  child: Icon(Icons.delete),
+),
                  ElevatedButton(onPressed: ()async{
                   await ImprimerActivite().ActiviteImprimer(activite);
                  }, child: Icon(Icons.alarm),

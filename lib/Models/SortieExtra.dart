@@ -1,6 +1,7 @@
 import 'package:college_royal/Models/admission.dart';
 
 class SortieExtra {
+  int? id;
   List<String>? activite;
   List<String>? club;
   List<String>? colonie;
@@ -12,6 +13,7 @@ class SortieExtra {
 
   SortieExtra();
 
+  // Transformer l'objet en JSON
   Map<String, dynamic> toJson() {
     return {
       "activite": activite,
@@ -28,30 +30,25 @@ class SortieExtra {
     };
   }
 
+  // Transformer le JSON en objet SortieExtra
   factory SortieExtra.fromJson(Map<String, dynamic> json) {
     SortieExtra sortieExtra = SortieExtra();
 
-    sortieExtra.activite =
-        List<String>.from(json['activite'] ?? []);
+    sortieExtra.id = json['id'];
 
-    sortieExtra.club =
-        List<String>.from(json['club'] ?? []);
-
-    sortieExtra.colonie =
-        List<String>.from(json['colonie'] ?? 'Non Identifier');
-
-    sortieExtra.cours =
-        List<String>.from(json['cours'] ?? []);
-
-    sortieExtra.concours =
-        List<String>.from(json['concours'] ?? []);
-
-    sortieExtra.etude =
-        List<String>.from(json['etude'] ?? []);
+    sortieExtra.activite = List<String>.from(json['activite'] ?? []);
+    sortieExtra.club = List<String>.from(json['club'] ?? []);
+    sortieExtra.colonie = List<String>.from(
+      json['colonie'] ?? ['Non Identifier'],
+    );
+    sortieExtra.cours = List<String>.from(json['cours'] ?? []);
+    sortieExtra.concours = List<String>.from(json['concours'] ?? []);
+    sortieExtra.etude = List<String>.from(json['etude'] ?? []);
 
     sortieExtra.admission = json['admission'] != null
         ? Admission.fromJson(
-            Map<String, dynamic>.from(json['admission']))
+            Map<String, dynamic>.from(json['admission']),
+          )
         : null;
 
     return sortieExtra;

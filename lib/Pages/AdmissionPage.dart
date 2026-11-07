@@ -2,6 +2,7 @@ import 'package:college_royal/Models/admission.dart';
 import 'package:college_royal/Widegt/AdmissionState.dart';
 import 'package:college_royal/Widegt/ImprimerPdf.dart';
 import 'package:college_royal/Widegt/MyDrawer.dart';
+import 'package:college_royal/Widegt/SortieState.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -22,6 +23,7 @@ class _AdmissionPageState extends ConsumerState<AdmissionPage> {
     super.initState();
     Future.microtask((){
       ref.read(admissionProvider.notifier).findAll();
+      ref.read(sortieProvider.notifier).findAll();
     });
   }
 
@@ -30,6 +32,8 @@ class _AdmissionPageState extends ConsumerState<AdmissionPage> {
     @override
   Widget build(BuildContext context) {
   final state=ref.watch(admissionProvider);
+  final state1 = ref.watch(admissionProvider);
+  final sortieState = ref.watch(sortieProvider);
   if(state.loading==true){
     return Scaffold(
      appBar: AppBar(
@@ -228,14 +232,72 @@ class _AdmissionPageState extends ConsumerState<AdmissionPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                IconButton(onPressed: ()async{
+               IconButton(
+  onPressed: () async {
 
-                }, icon: Icon(Icons.delete, color: Colors.red)),
-                IconButton(onPressed: ()async{
-                  
-                 await ImprimerPdf().imprimerAdmission(a);
+    final confirmation = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text("Confirmation"),
+        content: Text(
+          "Voulez-vous vraiment supprimer cette admission ?"
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context, false);
+            },
+            child: Text("Annuler"),
+          ),
 
-                }, icon: Icon(Icons.update, color: Colors.indigo))
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context, true);
+            },
+            child: Text(
+              "Supprimer",
+              style: TextStyle(color: Colors.red),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmation == true && a.id != null) {
+      await ref.read(admissionProvider.notifier).delete(a.id!);
+    }
+
+  },
+  icon: Icon(Icons.delete, color: Colors.red),
+),
+                IconButton(
+  onPressed: () async {
+    // 1. Récupérer les activités liées à cette admission
+    final activites = sortieState.sortieExtra.where(
+      (s) => s.admission?.id == a.id,
+    ).toList();
+
+    // 2. Vérifier si une activité existe
+    if (activites.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Aucune activité trouvée pour cet élève."),
+        ),
+      );
+      return;
+    }
+
+    // 3. Imprimer les deux formulaires
+    await ImprimerPdf().imprimerAdmissionEtActivite(
+      a,
+      activites.first,
+    );
+  },
+  icon: const Icon(
+    Icons.print,
+    color: Colors.indigo,
+  ),
+)
               ],
             )
           ],

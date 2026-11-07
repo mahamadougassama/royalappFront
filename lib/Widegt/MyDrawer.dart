@@ -1,31 +1,44 @@
-import 'package:flutter/material.dart';
 
-class MyDrawer extends StatelessWidget {
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+
+import 'package:college_royal/Widegt/AuthState.dart';
+
+class MyDrawer extends ConsumerWidget {
   const MyDrawer({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+
+    final etat = ref.watch(authProvider);
+
+    final estAdmin = etat.role == "ADMIN";
+
     return Drawer(
       child: ListView(
-        padding: EdgeInsets.zero, // Supprime l'espace par défaut en haut
+        padding: EdgeInsets.zero,
         children: [
-          // En-tête du Drawer personnalisé
           DrawerHeader(
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               color: Colors.indigo,
             ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Avatar avec ombre et bordure propre
                 Container(
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 2),
+                    border: Border.all(
+                      color: Colors.white,
+                      width: 2,
+                    ),
                   ),
                   child: const CircleAvatar(
                     radius: 35,
-                    backgroundImage: AssetImage("lib/asset/Images/logoCollege.png"),
+                    backgroundImage: AssetImage(
+                      "lib/asset/Images/logoCollege.png",
+                    ),
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -41,59 +54,53 @@ class MyDrawer extends StatelessWidget {
             ),
           ),
 
-          // Éléments du menu avec de vrais libellés et icônes adaptées
-          ListTile(
-            leading: const Icon(Icons.home_outlined, color: Colors.indigo),
-            title: const Text(
-              "Accueil",
-              style: TextStyle(fontWeight: FontWeight.w500),
-            ),
-            onTap: () {
-              Navigator.pushNamed(context, '/');
-            },
-          ),
-          
-          ListTile(
-            leading: const Icon(Icons.person_add_outlined, color: Colors.indigo),
-            title: const Text(
-              "Eleve",
-              style: TextStyle(fontWeight: FontWeight.w500),
-            ),
-            onTap: () {
-              // Remplacez par votre route d'inscription si nécessaire
-              Navigator.pushNamed(context, '/eleve');
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.person_add_outlined, color: Colors.indigo),
-            title: const Text(
-              "ACTIVITE EXTRA-SCOLAIRE",
-              style: TextStyle(fontWeight: FontWeight.w500),
-            ),
-            onTap: () {
-              // Remplacez par votre route d'inscription si nécessaire
-              Navigator.pushNamed(context, '/activite');
-            },
-          ),
-          const Divider(), // Une petite ligne de séparation subtile
+          // Menus accessibles à tous
 
           ListTile(
-            leading: const Icon(Icons.info_outline, color: Colors.indigo),
-            title: const Text(
-              "List Admission",
-              style: TextStyle(fontWeight: FontWeight.w500),
-            ),
+            leading: const Icon(Icons.home_outlined, color: Colors.indigo),
+            title: const Text("Accueil"),
             onTap: () {
-              Navigator.pushNamed(context, '/listAdmission');
+              context.go('/');
             },
           ),
+
           ListTile(
-            leading: Icon(Icons.access_time),
-            title: Text("Liste des Activite",style: TextStyle(color: Colors.indigo),),
+            leading: const Icon(Icons.person_add_outlined, color: Colors.indigo),
+            title: const Text("Eleve"),
             onTap: () {
-              Navigator.pushNamed(context, '/listActivite');
+              context.go('/eleve');
             },
-          )
+          ),
+
+          ListTile(
+            leading: const Icon(Icons.person_add_outlined, color: Colors.indigo),
+            title: const Text("ACTIVITE EXTRA-SCOLAIRE"),
+            onTap: () {
+              context.go('/activite');
+            },
+          ),
+
+          // Menus réservés à l'administrateur
+
+          if (estAdmin) ...[
+            const Divider(),
+
+            ListTile(
+              leading: const Icon(Icons.info_outline, color: Colors.indigo),
+              title: const Text("Liste Admission"),
+              onTap: () {
+                context.go('/listAdmission');
+              },
+            ),
+
+            ListTile(
+              leading: const Icon(Icons.access_time, color: Colors.indigo),
+              title: const Text("Liste des Activite"),
+              onTap: () {
+                context.go('/listActivite');
+              },
+            ),
+          ],
         ],
       ),
     );

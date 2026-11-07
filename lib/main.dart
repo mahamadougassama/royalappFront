@@ -1,41 +1,35 @@
-import 'package:college_royal/Pages/Activite.dart';
-import 'package:college_royal/Pages/ActivitePage.dart';
-import 'package:college_royal/Pages/AdmissionPage.dart';
-import 'package:college_royal/Pages/IdentiteElevePage.dart';
-import 'package:college_royal/Pages/IdentiteParentPage.dart';
-import 'package:college_royal/Pages/InformationComplemetairePage.dart';
-import 'package:college_royal/Pages/acceuile.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
+import 'package:college_royal/Pages/AppRouter.dart';
 
 void main() {
-  runApp( const ProviderScope(
+  runApp(
+    const ProviderScope(
       child: MyApp(),
-    ),);
+    ),
+  );
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends ConsumerWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
+  Widget build(BuildContext context, WidgetRef ref) {
+
+    final router = ref.watch(routerProvider);
+
+    return MaterialApp.router(
       title: 'College Royal',
+      debugShowCheckedModeBanner: false,
+
       theme: ThemeData(
-       
-        colorScheme: .fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.deepPurple,
+        ),
       ),
-      routes: {
-        '/':(context) => Accueil(),
-        '/activite':(context) => Activite(),
-        '/listAdmission':(context) => AdmissionPage(),
-        '/eleve':(context) => IdentiteElevePage(),
-        '/listActivite':(context) => ActivitePage(),
-      },
-      initialRoute: '/',
+
+      routerConfig: router,
     );
   }
 }
-

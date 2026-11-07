@@ -2,6 +2,7 @@ import 'package:college_royal/Models/admission.dart';
 import 'package:college_royal/Service/AdmissionService.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:college_royal/Widegt/AuthState.dart';
 
 class AdmissionState {
 final List<Admission> admission;
@@ -35,20 +36,28 @@ class AdmissionNotifier extends Notifier<AdmissionState> {
       loading: true
     );
   }
-  Future<void> findAll()async{
-    try{
-     final list=await _admissionService.findAll();
-     state=state.copyWith(
-      admission: list,
-      loading: false
-     );
-    }catch(e){
-       state=state.copyWith(
-        loading: false,
-        erreur: e.toString()
-       );
+  Future<void> findAll() async {
+  try {
+    final token = ref.read(authProvider).token;
+
+    if (token == null) {
+      throw Exception("Utilisateur non connecté");
     }
+
+    final list = await _admissionService.findAll(token);
+
+    state = state.copyWith(
+      admission: list,
+      loading: false,
+      erreur: null,
+    );
+  } catch (e) {
+    state = state.copyWith(
+      loading: false,
+      erreur: e.toString(),
+    );
   }
+}
     Future<Admission> save(Admission admission)async{
       try{
     final nouveau=await _admissionService.save(admission);
@@ -66,6 +75,31 @@ class AdmissionNotifier extends Notifier<AdmissionState> {
       rethrow;
       }
     }
+    Future<void> delete(int id) async {
+  try {
+    final token = ref.read(authProvider).token;
+
+    if (token == null) {
+      throw Exception("Utilisateur non connecté");
+    }
+
+    await _admissionService.delete(id, token);
+
+    final nouvelleListe = state.admission
+        .where((admission) => admission.id != id)
+        .toList();
+
+    state = state.copyWith(
+      admission: nouvelleListe,
+      erreur: null,
+    );
+
+  } catch (e) {
+    state = state.copyWith(
+      erreur: e.toString(),
+    );
+  }
+}
    
 }
  final admissionProvider= NotifierProvider<AdmissionNotifier,AdmissionState>(() {

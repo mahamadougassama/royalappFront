@@ -1,273 +1,435 @@
 
 import 'package:college_royal/Models/admission.dart';
-import 'package:flutter/widgets.dart';
+import 'package:college_royal/Models/SortieExtra.dart';
 import 'package:pdf/widgets.dart' as pw;
+import 'package:pdf/pdf.dart';
 import 'package:printing/printing.dart';
-
+import 'dart:typed_data';
+import 'package:flutter/services.dart' show rootBundle;
 class ImprimerPdf {
-  Future<void> imprimerAdmission(Admission admission) async {
+
+  // ==================================================
+  // FONCTION PRINCIPALE : GENERER LES DEUX PAGES
+  // ==================================================
+
+  Future<void> imprimerAdmissionEtActivite(
+    Admission admission,
+    SortieExtra sortieExtra,
+  ) async {
+
     final pdf = pw.Document();
 
+    // PAGE 1 : RECTO - FICHE D'ADMISSION COMPLETE
     pdf.addPage(
-      pw.MultiPage(
+      pw.Page(
+        pageFormat: PdfPageFormat.a4,
+        margin: const pw.EdgeInsets.all(20),
         build: (context) {
-          return [
-            pw.Row(
-              crossAxisAlignment: pw.CrossAxisAlignment.start,
-              children: [
-                // Partie gauche : ministère et gouvernorat
-                pw.Expanded(
-                  flex: 3,
-                  child: pw.Column(
-                    crossAxisAlignment: pw.CrossAxisAlignment.start,
-                    children: [
-                      pw.Text("MINISTERE DE L'EDUCATION NATIONALE"),
-                      pw.Text("*************************"),
-                      pw.Text("GOUVERNORAT DU DISTRICT DE BAMAKO"),
-                      pw.Text("*************************"),
-                      pw.Text("Académie d'enseignement :"),
-                      pw.Text("Rive Droite de Bamako"),
-                    ],
-                  ),
-                ),
-
-                // Partie centrale : République du Mali
-                pw.Expanded(
-                  flex: 2,
-                  child: pw.Column(
-                    children: [
-                      pw.Text("REPUBLIQUE DU MALI"),
-                      pw.Text("******************"),
-                      pw.Text("Un Peuple - Un But - Une Foi"),
-                    ],
-                  ),
-                ),
-
-                // Partie droite : emplacement de la photo
-                pw.Container(
-                  height: 110,
-                  width: 85,
-                  decoration: pw.BoxDecoration(
-                    border: pw.Border.all(),
-                  ),
-                  child: pw.Center(
-                    child: pw.Text("PHOTO"),
-                  ),
-                ),
-              ],
+          return pw.FittedBox(
+            fit: pw.BoxFit.scaleDown,
+            child: pw.SizedBox(
+              width: PdfPageFormat.a4.width - 40,
+              child: construireAdmission(admission),
             ),
-           pw.SizedBox(height: 20),
-            pw.Table(
-              border: pw.TableBorder.all(),
-              children: [
-                pw.TableRow(children: [
-                  pw.Padding(
-                    padding: pw.EdgeInsets.all(20),
-                    child: pw.Center(
-                      child: pw.Text(
-                        "Fiche d'admission 2026-2027",
-                        style: pw.TextStyle(
-                          fontSize: 20,
-                          fontWeight: pw.FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  )
-                ]),
-              ],
-            ),
-
-            pw.SizedBox(height: 20),
-
-            pw.Table(
-              border: pw.TableBorder.all(),
-              children: [
-                pw.TableRow(children: [
-                  pw.Padding(
-                    padding: pw.EdgeInsets.all(20),
-                    child: pw.Center(
-                      child: pw.Text("IDENTITE DE L'ELEVE"),
-                    ),
-                  )
-                ]),
-                pw.TableRow(children: [
-                  pw.Text("Prénom et Nom : ${admission.nomEleve ?? 'Non Identifier'} "),
-                ]),
-                pw.TableRow(children: [
-                  pw.Text("Date et Lieu de Naissance : ${admission.dateLieuNaissance??'Non Identifier'}"),
-                ]),
-                pw.TableRow(children: [
-                  pw.Text("Nationnalité : ${admission.nationnalite ??'Non Identifier'}"),
-                ]),
-                pw.TableRow(children: [
-                  pw.Row(
-                    mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                    children: [
-                      pw.Text("Classe actuelle : ${admission.classActuelle??'Non Identifier'}"),
-                      pw.Text("L'Etablissement fréquenté : ${admission.etablissementFrequente ??'Non Identifier'}"),
-                    ],
-                  )
-                ]),
-                pw.TableRow(children: [
-                  pw.Row(
-                    mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                    children: [
-                      pw.Text("Résidence : ${admission.residance ?? 'Non Identifier'}"),
-                      pw.Text("Rue : ${admission.rue ??'Non Identifier'}"),
-                      pw.Text("Porte : ${admission.porte??'Non Identifer'}")
-                    ],
-                  )
-                ]),
-              ],
-            ),
-
-            pw.SizedBox(height: 20),
-
-            pw.Table(
-              border: pw.TableBorder.all(),
-              children: [
-                pw.TableRow(children: [
-                  pw.Padding(
-                    padding: pw.EdgeInsets.all(12),
-                    child: pw.Center(
-                      child: pw.Text(
-                        "IDENTITE DES PARENTS",
-                        style: pw.TextStyle(
-                          fontSize: 20,
-                          fontWeight: pw.FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  )
-                ]),
-                pw.TableRow(children: [
-                  pw.Text("Père "),
-                  pw.Text("Mère")
-                ]),
-                pw.TableRow(children: [
-                  pw.Text("Prénom et Nom : ${admission.nomPere??'Non Identifer'}"),
-                  pw.Text("Prénom et Nom : ${admission.nomMere??'Non Identifer'}"),
-                ]),
-                pw.TableRow(children: [
-                  pw.Text("Profession : ${admission.professionPere??'Non Identifer'}"),
-                  pw.Text("Profesion : ${admission.professionMere??'Non Identifer'}"),
-                ]),
-                pw.TableRow(children: [
-                  pw.Text("Adresse et Contact : ${admission.adresseContactPere??'Non Identifer'}"),
-                  pw.Text("Adresse et Contact : ${admission.adresseContactMere??'Non Identifer'}" ),
-                ]),
-              ],
-            ),
-
-            pw.SizedBox(height: 20),
-
-            pw.Table(
-              border: pw.TableBorder.all(),
-              children: [
-                pw.TableRow(children: [
-                  pw.Padding(
-                    padding: pw.EdgeInsets.all(20),
-                    child: pw.Center(
-                      child: pw.Text("IDENTITE DES ENCADRANTS"),
-                    ),
-                  )
-                ]),
-              ],
-            ),
-
-            pw.Table(
-              border: pw.TableBorder.all(),
-              children: [
-                pw.TableRow(children: [
-                  pw.Text("Tuteur Accompagnant"),
-                  pw.Text("Répétiteur"),
-                ]),
-                pw.TableRow(children: [
-                  pw.Text("Prenom et Nom : ${admission.nomTuteur??'Non Identifer'}"),
-                  pw.Text("Prenom et Nom : ${admission.nomRepititeur??'Non Identifer'}"),
-                ]),
-                pw.TableRow(children: [
-                  pw.Text("Profession : ${admission.professionTuteur??'Non Identifer'}"),
-                  pw.Text("Profession : ${admission.professionRepetiteur??'Non Identifer'}"),
-                ]),
-                pw.TableRow(children: [
-                  pw.Text("Contacts : ${admission.adresseContactTuteur??'Non Identifer'}"),
-                  pw.Text("Contacts : ${admission.adresseContactRepitieteur??'Non Identifer'}"),
-                ])
-              ],
-            ),
-
-            pw.SizedBox(height: 20),
-
-            pw.Table(
-              border: pw.TableBorder.all(),
-              children: [
-                pw.TableRow(children: [
-                  pw.Padding(
-                    padding: pw.EdgeInsets.all(20),
-                    child: pw.Center(
-                      child: pw.Text(
-                        "Départ de l'élève a la descente de l'école",
-                      ),
-                    ),
-                  )
-                ]),
-                pw.TableRow(children: [
-                  pw.Text("Partir à la maison : ${admission.depart??'Non Identifer'}"),
-                ])
-              ],
-            ),
-
-            pw.SizedBox(height: 20),
-
-            pw.Table(
-              border: pw.TableBorder.all(),
-              children: [
-                pw.TableRow(children: [
-                  pw.Padding(
-                    padding: pw.EdgeInsets.all(20),
-                    child: pw.Center(
-                      child: pw.Text("Projet éducatif"),
-                    ),
-                  )
-                ]),
-                pw.TableRow(children: [
-                  pw.Text("Projet : ${admission.projet??'Non Identifer'}"),
-                ])
-              ],
-            ),
-
-            pw.SizedBox(height: 20),
-
-            pw.Table(
-              border: pw.TableBorder.all(),
-              children: [
-                pw.TableRow(children: [
-                  pw.Padding(
-                    padding: pw.EdgeInsets.all(20),
-                    child: pw.Center(
-                      child: pw.Text("DIVERS"),
-                    ),
-                  )
-                ]),
-                pw.TableRow(children: [
-                  pw.Text("La Particularite de l'Eleve : ${admission.particularite??'Non Identifer'}"),
-                ]),
-                pw.TableRow(children: [
-                  pw.Text("Le groupe snaguin de l'élève : ${admission.sanguin??'Non Identifer'}"),
-                ]),
-                pw.TableRow(children: [
-                  pw.Text("L'Adresse et le Contact du Medecin :${admission.sanguin??'Non Identifer'}"),
-                ])
-              ],
-            ),
-          ];
+          );
         },
       ),
     );
 
+    // PAGE 2 : VERSO - ACTIVITES EXTRASCOLAIRES
+    pdf.addPage(
+      pw.Page(
+        pageFormat: PdfPageFormat.a4,
+        margin: const pw.EdgeInsets.all(20),
+        build: (context) {
+          return pw.SizedBox(
+            width: PdfPageFormat.a4.width - 40,
+            child: construireActivite(sortieExtra),
+          );
+        },
+      ),
+    );
+
+    // LANCER L'IMPRESSION
     await Printing.layoutPdf(
       onLayout: (format) async => pdf.save(),
+    );
+  }
+
+  // ==================================================
+  // EN-TETE
+  // ==================================================
+
+  pw.Widget construireEntete({bool avecPhoto = false}) {
+
+    return pw.SizedBox(
+      width: PdfPageFormat.a4.width - 40,
+      child: pw.Row(
+        crossAxisAlignment: pw.CrossAxisAlignment.start,
+        children: [
+
+          pw.Expanded(
+            flex: 3,
+            child: pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                pw.Text("MINISTERE DE L'EDUCATION NATIONALE"),
+                pw.Text("*************************"),
+                pw.Text("GOUVERNORAT DU DISTRICT DE BAMAKO"),
+                pw.Text("*************************"),
+                pw.Text("Académie d'enseignement :"),
+                pw.Text("Rive Droite de Bamako"),
+              ],
+            ),
+          ),
+
+          pw.Expanded(
+            flex: 2,
+            child: pw.Column(
+              children: [
+                pw.Text("REPUBLIQUE DU MALI"),
+                pw.Text("******************"),
+                pw.Text("Un Peuple - Un But - Une Foi"),
+              ],
+            ),
+          ),
+
+          if (avecPhoto)
+            pw.Container(
+              height: 90,
+              width: 70,
+              decoration: pw.BoxDecoration(
+                border: pw.Border.all(),
+              ),
+              child: pw.Center(
+                child: pw.Text("PHOTO"),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  // ==================================================
+  // TITRES DES TABLEAUX
+  // ==================================================
+
+  pw.Widget titreTableau(String titre) {
+
+    return pw.Container(
+      width: double.infinity,
+      padding: const pw.EdgeInsets.all(8),
+      alignment: pw.Alignment.center,
+      decoration: pw.BoxDecoration(
+        border: pw.Border.all(),
+      ),
+      child: pw.Text(
+        titre,
+        style: pw.TextStyle(
+          fontWeight: pw.FontWeight.bold,
+        ),
+      ),
+    );
+  }
+
+  // ==================================================
+  // CREER UNE LIGNE
+  // ==================================================
+
+  pw.Widget ligne(String texte) {
+
+    return pw.Container(
+      width: double.infinity,
+      padding: const pw.EdgeInsets.all(7),
+      decoration: pw.BoxDecoration(
+        border: pw.Border.all(),
+      ),
+      child: pw.Text(texte),
+    );
+  }
+
+  // ==================================================
+  // PAGE 1 : FICHE D'ADMISSION
+  // ==================================================
+
+  pw.Widget construireAdmission(Admission admission) {
+
+    return pw.Column(
+      mainAxisSize: pw.MainAxisSize.min,
+      crossAxisAlignment: pw.CrossAxisAlignment.stretch,
+      children: [
+
+        // EN-TETE AVEC PHOTO
+        construireEntete(avecPhoto: true),
+
+        pw.SizedBox(height: 12),
+
+        titreTableau("FICHE D'ADMISSION 2026-2027"),
+
+        pw.SizedBox(height: 10),
+
+        // IDENTITE DE L'ELEVE
+        titreTableau("IDENTITE DE L'ELEVE"),
+
+        ligne(
+          "Prenom et Nom : ${admission.nomEleve ?? 'Non Identifier'}",
+        ),
+
+        ligne(
+          "Date et Lieu de Naissance : ${admission.dateLieuNaissance ?? 'Non Identifier'}",
+        ),
+
+        ligne(
+          "Nationalite : ${admission.nationnalite ?? 'Non Identifier'}",
+        ),
+
+        ligne(
+          "Classe actuelle : ${admission.classActuelle ?? 'Non Identifier'}",
+        ),
+
+        ligne(
+          "Etablissement frequente : ${admission.etablissementFrequente ?? 'Non Identifier'}",
+        ),
+
+        ligne(
+          "Residence : ${admission.residance ?? 'Non Identifier'}",
+        ),
+
+        pw.Row(
+          children: [
+
+            pw.Expanded(
+              child: ligne(
+                "Rue : ${admission.rue ?? 'Non Identifier'}",
+              ),
+            ),
+
+            pw.Expanded(
+              child: ligne(
+                "Porte : ${admission.porte ?? 'Non Identifier'}",
+              ),
+            ),
+          ],
+        ),
+
+        pw.SizedBox(height: 8),
+
+        // IDENTITE DES PARENTS
+        titreTableau("IDENTITE DES PARENTS"),
+
+        pw.Table(
+          border: pw.TableBorder.all(),
+          children: [
+
+            pw.TableRow(
+              children: [
+                cellule("PERE"),
+                cellule("MERE"),
+              ],
+            ),
+
+            pw.TableRow(
+              children: [
+                cellule(
+                  "Nom : ${admission.nomPere ?? 'Non Identifier'}",
+                ),
+                cellule(
+                  "Nom : ${admission.nomMere ?? 'Non Identifier'}",
+                ),
+              ],
+            ),
+
+            pw.TableRow(
+              children: [
+                cellule(
+                  "Profession : ${admission.professionPere ?? 'Non Identifier'}",
+                ),
+                cellule(
+                  "Profession : ${admission.professionMere ?? 'Non Identifier'}",
+                ),
+              ],
+            ),
+
+            pw.TableRow(
+              children: [
+                cellule(
+                  "Adresse et Contact : ${admission.adresseContactPere ?? 'Non Identifier'}",
+                ),
+                cellule(
+                  "Adresse et Contact : ${admission.adresseContactMere ?? 'Non Identifier'}",
+                ),
+              ],
+            ),
+          ],
+        ),
+
+        pw.SizedBox(height: 8),
+
+        // IDENTITE DES ENCADRANTS
+        titreTableau("IDENTITE DES ENCADRANTS"),
+
+        pw.Table(
+          border: pw.TableBorder.all(),
+          children: [
+
+            pw.TableRow(
+              children: [
+                cellule("TUTEUR ACCOMPAGNANT"),
+                cellule("REPETITEUR"),
+              ],
+            ),
+
+            pw.TableRow(
+              children: [
+                cellule(
+                  "Nom : ${admission.nomTuteur ?? 'Non Identifier'}",
+                ),
+                cellule(
+                  "Nom : ${admission.nomRepititeur ?? 'Non Identifier'}",
+                ),
+              ],
+            ),
+
+            pw.TableRow(
+              children: [
+                cellule(
+                  "Profession : ${admission.professionTuteur ?? 'Non Identifier'}",
+                ),
+                cellule(
+                  "Profession : ${admission.professionRepetiteur ?? 'Non Identifier'}",
+                ),
+              ],
+            ),
+
+            pw.TableRow(
+              children: [
+                cellule(
+                  "Contacts : ${admission.adresseContactTuteur ?? 'Non Identifier'}",
+                ),
+                cellule(
+                  "Contacts : ${admission.adresseContactRepitieteur ?? 'Non Identifier'}",
+                ),
+              ],
+            ),
+          ],
+        ),
+
+        pw.SizedBox(height: 8),
+
+        // DEPART DE L'ELEVE
+        titreTableau("DEPART DE L'ELEVE A LA DESCENTE"),
+
+        ligne(
+          "Depart a la maison : ${
+            admission.depart == "seul"
+                ? "Seul"
+                : admission.accompagnant != null &&
+                        admission.accompagnant!.trim().isNotEmpty
+                    ? "Avec ${admission.accompagnant}"
+                    : "Non Identifier"
+          }",
+        ),
+
+        pw.SizedBox(height: 8),
+
+        // PROJET EDUCATIF
+        titreTableau("PROJET EDUCATIF"),
+
+        ligne(
+          "Projet : ${admission.projet ?? 'Non Identifier'}",
+        ),
+
+        pw.SizedBox(height: 8),
+
+        // DIVERS
+        titreTableau("DIVERS"),
+
+        ligne(
+          "Particularite de l'eleve : ${admission.particularite ?? 'Non Identifier'}",
+        ),
+
+        ligne(
+          "Groupe sanguin : ${admission.sanguin ?? 'Non Identifier'}",
+        ),
+
+        ligne(
+          "Adresse et Contact du medecin : ${admission.medecin ?? 'Non Identifier'}",
+        ),
+      ],
+    );
+  }
+
+  // ==================================================
+  // PAGE 2 : FICHE DES ACTIVITES EXTRASCOLAIRES
+  // ==================================================
+
+  pw.Widget construireActivite(SortieExtra sortieExtra) {
+
+    return pw.Column(
+      mainAxisSize: pw.MainAxisSize.min,
+      crossAxisAlignment: pw.CrossAxisAlignment.stretch,
+      children: [
+
+        // EN-TETE SANS PHOTO
+        construireEntete(avecPhoto: false),
+
+        pw.SizedBox(height: 20),
+
+        titreTableau("ACTIVITES EXTRASCOLAIRES"),
+
+        pw.SizedBox(height: 10),
+
+        // SORTIES TRIMESTRIELLES
+        titreTableau("SORTIE TRIMESTRIELLE ET FETE"),
+
+        ligne(
+          "${sortieExtra.activite ?? []}",
+        ),
+
+        pw.SizedBox(height: 10),
+
+        // CLUBS
+        titreTableau("CLUBS"),
+
+        ligne(
+          "${sortieExtra.club ?? []}",
+        ),
+
+        pw.SizedBox(height: 10),
+
+        // COLONIES
+        titreTableau("COLONIE DE VACANCES"),
+
+        ligne(
+          "${sortieExtra.colonie ?? []}",
+        ),
+
+        pw.SizedBox(height: 10),
+
+        // COURS A DOMICILE
+        titreTableau("COURS A DOMICILE"),
+
+        ligne(
+          "${sortieExtra.cours ?? []}",
+        ),
+
+        pw.SizedBox(height: 10),
+
+        // CONCOURS
+       
+      ],
+    );
+  }
+
+  // ==================================================
+  // CELLULE UTILISEE DANS LES TABLEAUX
+  // ==================================================
+
+  pw.Widget cellule(String texte) {
+
+    return pw.Padding(
+      padding: const pw.EdgeInsets.all(7),
+      child: pw.Text(texte),
     );
   }
 }

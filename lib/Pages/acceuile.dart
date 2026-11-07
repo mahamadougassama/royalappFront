@@ -1,6 +1,6 @@
 import 'package:college_royal/Widegt/MyDrawer.dart';
 import 'package:flutter/material.dart';
-
+import 'package:go_router/go_router.dart';
 class Accueil extends StatelessWidget {
   const Accueil({super.key});
 
@@ -95,9 +95,9 @@ class Accueil extends StatelessWidget {
                       ),
                       elevation: 3,
                     ),
-                    onPressed: () {
-                      Navigator.pushNamed(context, "/eleve");
-                    },
+                   onPressed: () {
+  context.go('/eleve');
+},
                     child: const Text(
                       "Commencer l'inscription",
                       style: TextStyle(

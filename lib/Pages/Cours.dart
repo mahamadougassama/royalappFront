@@ -1,22 +1,30 @@
-import 'package:college_royal/Models/SortieExtra.dart';
-import 'package:college_royal/Pages/Concours.dart';
-import 'package:flutter/material.dart';
 
-class Cours extends StatefulWidget {
+import 'package:college_royal/Models/SortieExtra.dart';
+import 'package:college_royal/Widegt/SortieState.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+
+class Cours extends ConsumerStatefulWidget {
   final SortieExtra cours;
+
   const Cours({super.key, required this.cours});
 
   @override
-  State<Cours> createState() => _CoursState();
+  ConsumerState<Cours> createState() => _CoursState();
 }
 
-class _CoursState extends State<Cours> {
-  TextEditingController autrePremierCycle=TextEditingController();
-  TextEditingController autreSecondCycle=TextEditingController();
-  TextEditingController autreLycee=TextEditingController();
+class _CoursState extends ConsumerState<Cours> {
+  final TextEditingController autrePremierCycle = TextEditingController();
+  final TextEditingController autreSecondCycle = TextEditingController();
+  final TextEditingController autreLycee = TextEditingController();
+
   final List<String> premierCycle = [];
   final List<String> secondCycle = [];
   final List<String> Lycee = [];
+
+  bool enregistrement = false;
+
   @override
   void dispose() {
     autrePremierCycle.dispose();
@@ -25,6 +33,86 @@ class _CoursState extends State<Cours> {
     super.dispose();
   }
 
+  Future<void> sauvegarder() async {
+    if (enregistrement) return;
+
+    setState(() {
+      enregistrement = true;
+    });
+
+    // Rassembler les matières des trois cycles.
+    List<String> matieres = [
+      ...premierCycle,
+      ...secondCycle,
+      ...Lycee,
+    ];
+
+    // Ajouter les matières personnalisées.
+    if (autrePremierCycle.text.trim().isNotEmpty) {
+      matieres.add(autrePremierCycle.text.trim());
+    }
+
+    if (autreSecondCycle.text.trim().isNotEmpty) {
+      matieres.add(autreSecondCycle.text.trim());
+    }
+
+    if (autreLycee.text.trim().isNotEmpty) {
+      matieres.add(autreLycee.text.trim());
+    }
+
+    // Enregistrer les matières dans le modèle.
+    widget.cours.cours = matieres;
+
+    // Enregistrer directement dans le backend.
+    final succes = await ref
+        .read(sortieProvider.notifier)
+        .save(widget.cours);
+
+    if (!mounted) return;
+
+    setState(() {
+      enregistrement = false;
+    });
+
+    if (succes) {
+      await showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (dialogContext) {
+          return AlertDialog(
+            title: const Text(
+              "Merci !",
+              textAlign: TextAlign.center,
+            ),
+            content: const Text(
+              "Le Collège Royal vous remercie pour votre fidélité et vous dit à bientôt !",
+              textAlign: TextAlign.center,
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(dialogContext).pop();
+                },
+                child: const Text("Terminer"),
+              ),
+            ],
+          );
+        },
+      );
+
+      if (!mounted) return;
+      context.go('/');
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            "Échec de l'enregistrement. Veuillez réessayer.",
+          ),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +121,11 @@ class _CoursState extends State<Cours> {
       appBar: AppBar(
         title: const Text(
           "Cours À Domicile",
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
         ),
         backgroundColor: Colors.indigo,
         elevation: 2,
@@ -46,7 +138,6 @@ class _CoursState extends State<Cours> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Titre moderne de la section
               const Text(
                 "Sélection des Cours À Domicile",
                 style: TextStyle(
@@ -57,7 +148,6 @@ class _CoursState extends State<Cours> {
               ),
               const SizedBox(height: 16),
 
-              // Conteneur en Carte (Card) pour un effet propre et pro
               Card(
                 elevation: 3,
                 shadowColor: Colors.indigo.withOpacity(0.2),
@@ -67,9 +157,9 @@ class _CoursState extends State<Cours> {
                 child: Padding(
                   padding: const EdgeInsets.all(12.0),
                   child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal, // Permet d'éviter tout dépassement sur les petits téléphones
+                    scrollDirection: Axis.horizontal,
                     child: ConstrainedBox(
-                      constraints: const BoxConstraints(minWidth: 700), // Largeur minimale pour garder les colonnes aérées
+                      constraints: const BoxConstraints(minWidth: 700),
                       child: Table(
                         border: TableBorder.all(
                           color: Colors.indigo.shade100,
@@ -82,457 +172,318 @@ class _CoursState extends State<Cours> {
                           2: FlexColumnWidth(1),
                         },
                         children: [
-                          // En-têtes du tableau
                           TableRow(
                             decoration: BoxDecoration(
                               color: Colors.indigo.shade50,
-                              borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
+                              borderRadius: const BorderRadius.vertical(
+                                top: Radius.circular(8),
+                              ),
                             ),
                             children: const [
                               Padding(
                                 padding: EdgeInsets.all(12.0),
-                                child: Text("1er Cycle", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.indigo, fontSize: 15), textAlign: TextAlign.center),
+                                child: Text(
+                                  "1er Cycle",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.indigo,
+                                    fontSize: 15,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
                               ),
                               Padding(
                                 padding: EdgeInsets.all(12.0),
-                                child: Text("2nd Cycle", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.indigo, fontSize: 15), textAlign: TextAlign.center),
+                                child: Text(
+                                  "2nd Cycle",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.indigo,
+                                    fontSize: 15,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
                               ),
                               Padding(
                                 padding: EdgeInsets.all(12.0),
-                                child: Text("Lycée", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.indigo, fontSize: 15), textAlign: TextAlign.center),
+                                child: Text(
+                                  "Lycée",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.indigo,
+                                    fontSize: 15,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
                               ),
                             ],
                           ),
 
-                          // Ligne 1 : Options principales
+                          // Ligne 1
                           TableRow(
                             children: [
-                              Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 4),
-                                child: Row(children: [
-                                  Checkbox(
-                                    value: premierCycle.contains("Toutes les Matiere"),
-                                    activeColor: Colors.indigo,
-                                    onChanged: (valeur) {
-                                      setState(() {
-                                        if (valeur == true) {
-                                          premierCycle.add("Toutes les Matiere");
-                                        } else {
-                                          premierCycle.remove("Toutes les Matiere");
-                                        }
-                                      });
-                                    },
-                                  ),
-                                  const Expanded(child: Text("Toutes les matières", style: TextStyle(fontSize: 13))),
-                                ]),
+                              _caseACocher(
+                                liste: premierCycle,
+                                valeur: "Toutes les Matiere",
+                                texte: "Toutes les matières",
+                              ),
+                              _caseACocher(
+                                liste: secondCycle,
+                                valeur: "Mathematique",
+                                texte: "Mathematique",
                               ),
                               Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 4),
-                                child: Row(children: [
-                                  Checkbox(
-                                    value: secondCycle.contains("Mathematique"),
-                                    activeColor: Colors.indigo,
-                                    onChanged: (valeur) {
-                                      setState(() {
-                                        if (valeur == true) {
-                                          secondCycle.add("Mathematique");
-                                        } else {
-                                          secondCycle.remove("Mathematique");
-                                        }
-                                      });
-                                    },
-                                  ),
-                                  const Expanded(child: Text("Mathematique", style: TextStyle(fontSize: 13))),
-                                ]),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 4),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 4,
+                                ),
                                 child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Row(children: [
-                                      Checkbox(
-                                        value: Lycee.contains("Economie"),
-                                        activeColor: Colors.indigo,
-                                        onChanged: (valeur) {
-                                          setState(() {
-                                            if (valeur == true) {
-                                              Lycee.add("Economie");
-                                            } else {
-                                              Lycee.remove("Economie");
-                                            }
-                                          });
-                                        },
-                                      ),
-                                      const Text("Economie", style: TextStyle(fontSize: 13)),
-                                    ]),
-                                    Row(children: [
-                                      Checkbox(
-                                        value: Lycee.contains("Comptabilite"),
-                                        activeColor: Colors.indigo,
-                                        onChanged: (valeur) {
-                                          setState(() {
-                                            if (valeur == true) {
-                                              Lycee.add("Comptabilite");
-                                            } else {
-                                              Lycee.remove("Comptabilite");
-                                            }
-                                          });
-                                        },
-                                      ),
-                                      const Text("Comptabilite", style: TextStyle(fontSize: 13)),
-                                    ]),
+                                    _caseSimple(
+                                      liste: Lycee,
+                                      valeur: "Economie",
+                                    ),
+                                    _caseSimple(
+                                      liste: Lycee,
+                                      valeur: "Comptabilite",
+                                    ),
                                   ],
                                 ),
                               ),
                             ],
                           ),
 
-                          // Ligne 2 : Matières secondaires
+                          // Ligne 2
                           TableRow(
                             children: [
-                              Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 4),
-                                child: Row(children: [
-                                  Checkbox(
-                                    value: premierCycle.contains("Français"),
-                                    activeColor: Colors.indigo,
-                                    onChanged: (valeur) {
-                                      setState(() {
-                                        if (valeur == true) {
-                                          premierCycle.add("Français");
-                                        } else {
-                                          premierCycle.remove("Français");
-                                        }
-                                      });
-                                    },
-                                  ),
-                                  const Expanded(child: Text("Français", style: TextStyle(fontSize: 13))),
-                                ]),
+                              _caseACocher(
+                                liste: premierCycle,
+                                valeur: "Français",
+                                texte: "Français",
+                              ),
+                              _caseACocher(
+                                liste: secondCycle,
+                                valeur: "Physique-chimie",
+                                texte: "Physique-chimie",
                               ),
                               Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 4),
-                                child: Row(children: [
-                                  Checkbox(
-                                    value: secondCycle.contains("Physique-chimie"),
-                                    activeColor: Colors.indigo,
-                                    onChanged: (valeur) {
-                                      setState(() {
-                                        if (valeur == true) {
-                                          secondCycle.add("Physique-chimie");
-                                        } else {
-                                          secondCycle.remove("Physique-chimie");
-                                        }
-                                      });
-                                    },
-                                  ),
-                                  const Expanded(child: Text("Physique-chimie", style: TextStyle(fontSize: 13))),
-                                ]),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 4),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 4,
+                                ),
                                 child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Row(children: [
-                                      Checkbox(
-                                        value: Lycee.contains("Mathematique"),
-                                        activeColor: Colors.indigo,
-                                        onChanged: (valeur) {
-                                          setState(() {
-                                            if (valeur == true) {
-                                              Lycee.add("Mathematique");
-                                            } else {
-                                              Lycee.remove("Mathematique");
-                                            }
-                                          });
-                                        },
-                                      ),
-                                      const Text("Mathematique", style: TextStyle(fontSize: 13)),
-                                    ]),
-                                    Row(children: [
-                                      Checkbox(
-                                        value: Lycee.contains("Physique-chimie"),
-                                        activeColor: Colors.indigo,
-                                        onChanged: (valeur) {
-                                          setState(() {
-                                            if (valeur == true) {
-                                              Lycee.add("Physique-chimie");
-                                            } else {
-                                              Lycee.remove("Physique-chimie");
-                                            }
-                                          });
-                                        },
-                                      ),
-                                      const Text("Physique-chimie", style: TextStyle(fontSize: 13)),
-                                    ]),
+                                    _caseSimple(
+                                      liste: Lycee,
+                                      valeur: "Mathematique",
+                                    ),
+                                    _caseSimple(
+                                      liste: Lycee,
+                                      valeur: "Physique-chimie",
+                                    ),
                                   ],
                                 ),
                               ),
                             ],
                           ),
 
-                          // Ligne 3 : Anglais, SVT, etc.
+                          // Ligne 3
                           TableRow(
                             children: [
-                              Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 4),
-                                child: Row(children: [
-                                  Checkbox(
-                                    value: premierCycle.contains("Anglais"),
-                                    activeColor: Colors.indigo,
-                                    onChanged: (valeur) {
-                                      setState(() {
-                                        if (valeur == true) {
-                                          premierCycle.add("Anglais");
-                                        } else {
-                                          premierCycle.remove("Anglais");
-                                        }
-                                      });
-                                    },
-                                  ),
-                                  const Expanded(child: Text("Anglais", style: TextStyle(fontSize: 13))),
-                                ]),
+                              _caseACocher(
+                                liste: premierCycle,
+                                valeur: "Anglais",
+                                texte: "Anglais",
+                              ),
+                              _caseACocher(
+                                liste: secondCycle,
+                                valeur: "Français",
+                                texte: "Français",
                               ),
                               Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 4),
-                                child: Row(children: [
-                                  Checkbox(
-                                    value: secondCycle.contains("Français"),
-                                    activeColor: Colors.indigo,
-                                    onChanged: (valeur) {
-                                      setState(() {
-                                        if (valeur == true) {
-                                          secondCycle.add("Français");
-                                        } else {
-                                          secondCycle.remove("Français");
-                                        }
-                                      });
-                                    },
-                                  ),
-                                  const Expanded(child: Text("Français", style: TextStyle(fontSize: 13))),
-                                ]),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 4),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 4,
+                                ),
                                 child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Row(children: [
-                                      Checkbox(
-                                        value: Lycee.contains("SVT"),
-                                        activeColor: Colors.indigo,
-                                        onChanged: (valeur) {
-                                          setState(() {
-                                            if (valeur == true) {
-                                              Lycee.add("SVT");
-                                            } else {
-                                              Lycee.remove("SVT");
-                                            }
-                                          });
-                                        },
-                                      ),
-                                      const Text("SVT", style: TextStyle(fontSize: 13)),
-                                    ]),
-                                    Row(children: [
-                                      Checkbox(
-                                        value: Lycee.contains("Géologie"),
-                                        activeColor: Colors.indigo,
-                                        onChanged: (valeur) {
-                                          setState(() {
-                                            if (valeur == true) {
-                                              Lycee.add("Géologie");
-                                            } else {
-                                              Lycee.remove("Géologie");
-                                            }
-                                          });
-                                        },
-                                      ),
-                                      const Text("Géologie", style: TextStyle(fontSize: 13)),
-                                    ]),
+                                    _caseSimple(
+                                      liste: Lycee,
+                                      valeur: "SVT",
+                                    ),
+                                    _caseSimple(
+                                      liste: Lycee,
+                                      valeur: "Géologie",
+                                    ),
                                   ],
                                 ),
                               ),
                             ],
                           ),
 
-                          // Ligne 4 : Option "Aucun" pour les trois colonnes
+                          // Ligne 4 : Aucun
                           TableRow(
                             children: [
-                              Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 4),
-                                child: Row(children: [
-                                  Checkbox(
-                                    value: premierCycle.contains("Aucun"),
-                                    activeColor: Colors.indigo,
-                                    onChanged: (valeur) {
-                                      setState(() {
-                                        if (valeur == true) {
-                                          premierCycle.add("Aucun");
-                                        } else {
-                                          premierCycle.remove("Aucun");
-                                        }
-                                      });
-                                    },
-                                  ),
-                                  const Expanded(child: Text("Aucun", style: TextStyle(fontSize: 13))),
-                                ]),
+                              _caseACocher(
+                                liste: premierCycle,
+                                valeur: "Aucun",
+                                texte: "Aucun",
                               ),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 4),
-                                child: Row(children: [
-                                  Checkbox(
-                                    value: secondCycle.contains("Aucun"),
-                                    activeColor: Colors.indigo,
-                                    onChanged: (valeur) {
-                                      setState(() {
-                                        if (valeur == true) {
-                                          secondCycle.add("Aucun");
-                                        } else {
-                                          secondCycle.remove("Aucun");
-                                        }
-                                      });
-                                    },
-                                  ),
-                                  const Expanded(child: Text("Aucun", style: TextStyle(fontSize: 13))),
-                                ]),
+                              _caseACocher(
+                                liste: secondCycle,
+                                valeur: "Aucun",
+                                texte: "Aucun",
                               ),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 4),
-                                child: Row(children: [
-                                  Checkbox(
-                                    value: Lycee.contains("Aucun"),
-                                    activeColor: Colors.indigo,
-                                    onChanged: (valeur) {
-                                      setState(() {
-                                        if (valeur == true) {
-                                          Lycee.add("Aucun");
-                                        } else {
-                                          Lycee.remove("Aucun");
-                                        }
-                                      });
-                                    },
-                                  ),
-                                  const Expanded(child: Text("Aucun", style: TextStyle(fontSize: 13))),
-                                ]),
+                              _caseACocher(
+                                liste: Lycee,
+                                valeur: "Aucun",
+                                texte: "Aucun",
                               ),
                             ],
                           ),
 
-                          // Ligne 5 : Champs de texte "Autres à préciser"
+                          // Ligne 5 : Autres à préciser
                           TableRow(
-                            decoration: BoxDecoration(color: Colors.grey.shade50),
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade50,
+                            ),
                             children: [
-                              Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: TextField(
-                                  controller: autrePremierCycle,
-                                  decoration: InputDecoration(
-                                    hintText: "Autre...",
-                                    hintStyle: const TextStyle(fontSize: 12),
-                                    contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                                    focusedBorder: const OutlineInputBorder(borderSide: BorderSide(color: Colors.indigo, width: 1.5)),
-                                  ),
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: TextField(
-                                  controller: autreSecondCycle,
-                                  decoration: InputDecoration(
-                                    hintText: "Autre...",
-                                    hintStyle: const TextStyle(fontSize: 12),
-                                    contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                                    focusedBorder: const OutlineInputBorder(borderSide: BorderSide(color: Colors.indigo, width: 1.5)),
-                                  ),
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: TextField(
-                                  controller: autreLycee,
-                                  decoration: InputDecoration(
-                                    hintText: "Autre...",
-                                    hintStyle: const TextStyle(fontSize: 12),
-                                    contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                                    focusedBorder: const OutlineInputBorder(borderSide: BorderSide(color: Colors.indigo, width: 1.5)),
-                                  ),
-                                ),
-                              ),
+                              _champAutre(autrePremierCycle),
+                              _champAutre(autreSecondCycle),
+                              _champAutre(autreLycee),
                             ],
                           ),
                         ],
                       ),
-                         
-              
-            
                     ),
                   ),
                 ),
               ),
-               const SizedBox(height: 32),
-            // BOUTON SUIVANT PLEINE LARGEUR
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: () {
-  List<String> matieres = [];
 
-  if (premierCycle.isNotEmpty) {
-    matieres = [...premierCycle];
-  } else if (secondCycle.isNotEmpty) {
-    matieres = [...secondCycle];
-  } else if (Lycee.isNotEmpty) {
-    matieres = [...Lycee];
-  }
+              const SizedBox(height: 32),
 
-  // Récupérer les matières saisies dans les champs Autre
-  if (autrePremierCycle.text.trim().isNotEmpty) {
-    matieres.add(autrePremierCycle.text.trim());
-  }
-
-  if (autreSecondCycle.text.trim().isNotEmpty) {
-    matieres.add(autreSecondCycle.text.trim());
-  }
-
-  if (autreLycee.text.trim().isNotEmpty) {
-    matieres.add(autreLycee.text.trim());
-  }
-
-  // Enregistrer dans le même objet
-  widget.cours.cours = matieres;
-
-  Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (context) => Concours(
-        concours: widget.cours,
-      ),
-    ),
-  );
-},
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.indigo,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: enregistrement ? null : sauvegarder,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.indigo,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    elevation: 3,
                   ),
-                  elevation: 3,
-                ),
-                icon: const Icon(Icons.arrow_forward_rounded, size: 20),
-                label: const Text(
-                  "Suivant",
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
+                  icon: enregistrement
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : const Icon(
+                          Icons.save,
+                          size: 20,
+                        ),
+                  label: Text(
+                    enregistrement ? "Enregistrement..." : "Terminer",
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
-              )),
+              ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Case à cocher avec texte personnalisé.
+  Widget _caseACocher({
+    required List<String> liste,
+    required String valeur,
+    required String texte,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        children: [
+          Checkbox(
+            value: liste.contains(valeur),
+            activeColor: Colors.indigo,
+            onChanged: (valeurCochee) {
+              setState(() {
+                if (valeurCochee == true) {
+                  liste.add(valeur);
+                } else {
+                  liste.remove(valeur);
+                }
+              });
+            },
+          ),
+          Expanded(
+            child: Text(
+              texte,
+              style: const TextStyle(fontSize: 13),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Case à cocher simple pour les matières du lycée.
+  Widget _caseSimple({
+    required List<String> liste,
+    required String valeur,
+  }) {
+    return Row(
+      children: [
+        Checkbox(
+          value: liste.contains(valeur),
+          activeColor: Colors.indigo,
+          onChanged: (valeurCochee) {
+            setState(() {
+              if (valeurCochee == true) {
+                liste.add(valeur);
+              } else {
+                liste.remove(valeur);
+              }
+            });
+          },
+        ),
+        Text(
+          valeur,
+          style: const TextStyle(fontSize: 13),
+        ),
+      ],
+    );
+  }
+
+  // Champ Autre.
+  Widget _champAutre(TextEditingController controller) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: TextField(
+        controller: controller,
+        decoration: InputDecoration(
+          hintText: "Autre...",
+          hintStyle: const TextStyle(fontSize: 12),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 10,
+            vertical: 8,
+          ),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+          focusedBorder: const OutlineInputBorder(
+            borderSide: BorderSide(
+              color: Colors.indigo,
+              width: 1.5,
+            ),
           ),
         ),
       ),

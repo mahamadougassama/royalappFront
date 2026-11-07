@@ -1,30 +1,98 @@
-import 'dart:math';
 
 import 'package:college_royal/Models/SortieExtra.dart';
 import 'package:college_royal/Widegt/SortieState.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 class Etudes extends ConsumerStatefulWidget {
-  SortieExtra etudes;
-  Etudes({super.key, required this.etudes});
+  final SortieExtra etudes;
+
+  const Etudes({super.key, required this.etudes});
 
   @override
   ConsumerState<Etudes> createState() => _EtudesState();
 }
 
 class _EtudesState extends ConsumerState<Etudes> {
-  TextEditingController autreEtude=TextEditingController();
-    List<String> etude = [];
+  final TextEditingController autreEtude = TextEditingController();
+
+  List<String> etude = [];
+
+  @override
+  void dispose() {
+    autreEtude.dispose();
+    super.dispose();
+  }
+
+  Future<void> sauvegarder() async {
+    List<String> listeEtudes = [...etude];
+
+    if (autreEtude.text.trim().isNotEmpty) {
+      listeEtudes.add(autreEtude.text.trim());
+    }
+
+    widget.etudes.etude = listeEtudes;
+
+    final succes = await ref
+        .read(sortieProvider.notifier)
+        .save(widget.etudes);
+
+    if (!mounted) return;
+
+    if (succes) {
+      await showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (dialogContext) {
+          return AlertDialog(
+            title: const Text(
+              "Merci !",
+              textAlign: TextAlign.center,
+            ),
+            content: const Text(
+              "Le Collège Royal vous remercie pour votre fidélité et vous dit à bientôt !",
+              textAlign: TextAlign.center,
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(dialogContext).pop();
+                },
+                child: const Text("Terminer"),
+              ),
+            ],
+          );
+        },
+      );
+
+      if (!mounted) return;
+
+      context.go('/');
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            "Échec de l'enregistrement. Veuillez réessayer.",
+          ),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
         title: const Text(
           "Etudes Universitaire",
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
         ),
         backgroundColor: Colors.indigo,
         elevation: 2,
@@ -35,7 +103,6 @@ class _EtudesState extends ConsumerState<Etudes> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // CARTE PRO POUR LE CONTENU
             Card(
               elevation: 3,
               shadowColor: Colors.indigo.withOpacity(0.2),
@@ -62,183 +129,82 @@ class _EtudesState extends ConsumerState<Etudes> {
                       ],
                     ),
                     const Divider(height: 24),
-                    
-                    // DÉFILEMENT HORIZONTAL DE SÉCURITÉ POUR TOUS LES APPAREILS
+
                     SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: ConstrainedBox(
                         constraints: const BoxConstraints(minWidth: 700),
                         child: Table(
-                          defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+                          defaultVerticalAlignment:
+                              TableCellVerticalAlignment.middle,
                           children: [
                             TableRow(
                               children: [
-                                Row(
-                                  children: [
-                                    Checkbox(
-                                      value: etude.contains("Maroc"),
-                                      activeColor: Colors.indigo,
-                                      onChanged: (valeur) {
-                                        setState(() {
-                                          if (valeur == true) {
-                                            etude.remove("Aucun");
-                                            etude.add("Maroc");
-                                          } else {
-                                            etude.remove("Maroc");
-                                          }
-                                        });
-                                      },
-                                    ),
-                                    const Text("Maroc", style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500))
-                                  ],
-                                ),
-                                Row(
-                                  children: [
-                                    Checkbox(
-                                      value: etude.contains("Europe"),
-                                      activeColor: Colors.indigo,
-                                      onChanged: (valeur) {
-                                        setState(() {
-                                          if (valeur == true) {
-                                            etude.remove("Aucun");
-                                            etude.add("Europe");
-                                          } else {
-                                            etude.remove("Europe");
-                                          }
-                                        });
-                                      },
-                                    ),
-                                    const Text("Europe", style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500))
-                                  ],
-                                ),
-                                Row(
-                                  children: [
-                                    Checkbox(
-                                      value: etude.contains("Canada"),
-                                      activeColor: Colors.indigo,
-                                      onChanged: (valeur) {
-                                        setState(() {
-                                          if (valeur == true) {
-                                            etude.remove("Aucun");
-                                            etude.add("Canada");
-                                          } else {
-                                            etude.remove("Canada");
-                                          }
-                                        });
-                                      },
-                                    ),
-                                    const Text("Canada", style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500))
-                                  ],
-                                ),
-                                Row(
-                                  children: [
-                                    Checkbox(
-                                      value: etude.contains("USA"),
-                                      activeColor: Colors.indigo,
-                                      onChanged: (valeur) {
-                                        setState(() {
-                                          if (valeur == true) {
-                                            etude.remove("Aucun");
-                                            etude.add("USA");
-                                          } else {
-                                            etude.remove("USA");
-                                          }
-                                        });
-                                      },
-                                    ),
-                                    const Text("USA", style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500))
-                                  ],
-                                ),
+                                construireChoix("Maroc"),
+                                construireChoix("Europe"),
+                                construireChoix("Canada"),
+                                construireChoix("USA"),
                               ],
                             ),
                             TableRow(
                               children: [
-                                Row(
-                                  children: [
-                                    Checkbox(
-                                      value: etude.contains("Chine"),
-                                      activeColor: Colors.indigo,
-                                      onChanged: (valeur) {
-                                        setState(() {
-                                          if (valeur == true) {
-                                          
-                                            etude.remove("Aucun");
-                                            etude.add("Chine");
-                                          } else {
-                                            etude.remove("Chine");
-                                          }
-                                        });
-                                      },
-                                    ),
-                                    const Text("Chine", style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500))
-                                  ],
-                                ),
+                                construireChoix("Chine"),
                                 Padding(
-                                  padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 8,
+                                    horizontal: 4,
+                                  ),
                                   child: TextField(
                                     controller: autreEtude,
                                     decoration: InputDecoration(
-                                      hintText: "Autres a preciser",
-                                      hintStyle: const TextStyle(fontSize: 12),
-                                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                                      enabledBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8),
-                                        borderSide: BorderSide(color: Colors.grey.shade300),
+                                      hintText: "Autres à préciser",
+                                      hintStyle:
+                                          const TextStyle(fontSize: 12),
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                        vertical: 10,
                                       ),
-                                      focusedBorder: const OutlineInputBorder(
-                                        borderRadius: BorderRadius.all(Radius.circular(8)),
-                                        borderSide: BorderSide(color: Colors.indigo, width: 1.5),
+                                      border: OutlineInputBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(8),
+                                      ),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(8),
+                                        borderSide: BorderSide(
+                                          color: Colors.grey.shade300,
+                                        ),
+                                      ),
+                                      focusedBorder:
+                                          const OutlineInputBorder(
+                                        borderSide: BorderSide(
+                                          color: Colors.indigo,
+                                          width: 1.5,
+                                        ),
                                       ),
                                     ),
                                   ),
                                 ),
-                                Row(
-                                  children: [
-                                    Checkbox(
-                                      value: etude.contains("Aucun"),
-                                      activeColor: Colors.indigo,
-                                      onChanged: (valeur) {
-                                        setState(() {
-                                          if (valeur == true) {
-                                            etude.clear();
-                                            etude.add("Aucun");
-                                          } else {
-                                            etude.remove("Aucun");
-                                          }
-                                        });
-                                      },
-                                    ),
-                                    const Text("Aucun", style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500))
-                                  ],
-                                ),
-                                Container(), // Cellule vide pour équilibrer la ligne du tableau
+                                construireChoix("Aucun"),
+                                Container(),
                               ],
                             ),
                           ],
                         ),
                       ),
                     ),
-                   
                   ],
                 ),
               ),
             ),
-             SizedBox(
+
+            const SizedBox(height: 20),
+
+            SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
-                onPressed: () {
-            List<String> listeEtudes = [...etude];
-
-          if (autreEtude.text.trim().isNotEmpty) {
-          listeEtudes.add(autreEtude.text.trim());
-        }
-
-         widget.etudes.etude = listeEtudes;
-
-          ref.read(sortieProvider.notifier).save(widget.etudes);
-          
-},
+                onPressed: sauvegarder,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.indigo,
                   foregroundColor: Colors.white,
@@ -248,18 +214,52 @@ class _EtudesState extends ConsumerState<Etudes> {
                   ),
                   elevation: 3,
                 ),
-                
+                icon: const Icon(Icons.save),
                 label: const Text(
-                  "Sauvegardez",
+                  "Sauvegarder",
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-              )),
+              ),
+            ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget construireChoix(String valeur) {
+    return Row(
+      children: [
+        Checkbox(
+          value: etude.contains(valeur),
+          activeColor: Colors.indigo,
+          onChanged: (selectionne) {
+            setState(() {
+              if (valeur == "Aucun" && selectionne == true) {
+                etude.clear();
+                etude.add("Aucun");
+              } else if (valeur == "Aucun") {
+                etude.remove("Aucun");
+              } else if (selectionne == true) {
+                etude.remove("Aucun");
+                etude.add(valeur);
+              } else {
+                etude.remove(valeur);
+              }
+            });
+          },
+        ),
+        Text(
+          valeur,
+          style: const TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
     );
   }
 }

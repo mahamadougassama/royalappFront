@@ -7,13 +7,19 @@ class AdmissionService {
 
   );
 
-Future<List<Admission>> findAll()async{
+Future<List<Admission>> findAll(String token) async {
+  final reponse = await _dio.get(
+    "/findAll",
+    options: Options(
+      headers: {
+        "Authorization": "Bearer $token",
+      },
+    ),
+  );
 
-  final reponse=await _dio.get("/findAll");
-  List<dynamic> list=reponse.data;
-  List<Admission> admission=list.map((a)=>Admission.fromJson(a)).toList();
-  return admission;
-  
+  List<dynamic> list = reponse.data;
+
+  return list.map((a) => Admission.fromJson(a)).toList();
 }
 Future<Admission> save(Admission admission)async{
    try{
@@ -22,6 +28,25 @@ Future<Admission> save(Admission admission)async{
    }catch(e){
     rethrow;
    }
+}
+Future<String> delete(int id, String token) async {
+  try {
+    final reponse = await _dio.delete(
+      "/delete",
+      queryParameters: {
+        "id": id,
+      },
+      options: Options(
+        headers: {
+          "Authorization": "Bearer $token",
+        },
+      ),
+    );
+
+    return reponse.data.toString();
+  } catch (e) {
+    rethrow;
+  }
 }
 
 }
